@@ -1,24 +1,42 @@
-import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useSelector,useDispatch } from "react-redux";
+import { useHistory,useLocation } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import ROUTES from "../app/routes";
+import { addCard } from "../features/cards/cardsSlice";
+import { addQuiz } from "../features/quizzes/quizsSlice";
+import { addQuizId, selectTopics } from "../features/topics/topicsSlice";
 
 export default function NewQuizForm() {
   const [name, setName] = useState("");
   const [cards, setCards] = useState([]);
   const [topicId, setTopicId] = useState("");
   const history = useHistory();
-  const topics = {};
+  const topics = useSelector(selectTopics);
+  const dispatch = useDispatch()
+  const location = useLocation()
+  useEffect(() => {
+    setTopicId(location.topicId)
+  }, [location])
+  
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (name.length === 0) {
+    if (name.length === 0 || !topicId) {
       return;
     }
-
-    const cardIds = [];
-
-    // create the new cards here and add each card's id to cardIds
+    const cardIds = cards.map(card => card.id);
+    cards.forEach(card => {
+      dispatch(addCard(card))
+    })
+    const newQuiz = {
+      name: name,
+      cardIds: cardIds,
+      id: uuidv4(),
+      topicId: topicId,
+    }
+    dispatch(addQuizId(newQuiz))
+    dispatch(addQuiz(newQuiz))
     // create the new quiz here
 
     history.push(ROUTES.quizzesRoute());
@@ -26,7 +44,7 @@ export default function NewQuizForm() {
 
   const addCardInputs = (e) => {
     e.preventDefault();
-    setCards(cards.concat({ front: "", back: "" }));
+    setCards(cards.concat({ front: '', back: "", id: uuidv4() }));
   };
 
   const removeCard = (e, index) => {
@@ -55,7 +73,7 @@ export default function NewQuizForm() {
           onChange={(e) => setTopicId(e.currentTarget.value)}
           placeholder="Topic"
         >
-          <option value="">Topic</option>
+           <option value="">Topic</option>
           {Object.values(topics).map((topic) => (
             <option key={topic.id} value={topic.id}>
               {topic.name}

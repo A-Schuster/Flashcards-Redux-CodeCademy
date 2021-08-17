@@ -23,7 +23,7 @@ export default function NewTopicForm() {
       name: name,
       icon: icon,
       id: id,
-      quizId: []
+      quizIds: []
     }
     dispatch(addTopic(newTopic))
     history.push(ROUTES.topicsRoute());
